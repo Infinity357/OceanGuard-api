@@ -17,3 +17,6 @@ COPY src src
 
 # Build application
 RUN ./gradlew build -x test --no-daemon
+
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
