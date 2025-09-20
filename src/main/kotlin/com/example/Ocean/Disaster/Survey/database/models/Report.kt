@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 @Document("reports")
 data class Report(
     @Id val id: ObjectId = ObjectId(),
-    val title: String,
+    val title: String?,
     val description: String,
     val hazardType: String,
     val urgency: String,

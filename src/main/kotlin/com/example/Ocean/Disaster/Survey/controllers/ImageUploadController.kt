@@ -28,8 +28,7 @@ class ImageUploadController(
             imageUrl = url
         )
     }
-     */
-
+*/
 
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadImage(@RequestParam("image") file: MultipartFile): ResponseEntity<Any> {
@@ -46,3 +45,4 @@ class ImageUploadController(
         }
     }
 }
+

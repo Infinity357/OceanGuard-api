@@ -5,7 +5,7 @@ import com.example.Ocean.Disaster.Survey.database.repository.UserRepository
 import com.example.Ocean.Disaster.Survey.security.HashEncoder
 import org.apache.http.auth.InvalidCredentialsException
 import org.bson.types.ObjectId
-import org.springframework.security.authentication.BadCredentialsException
+//import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.annotation.GetMapping
 //import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.annotation.PostMapping
@@ -45,26 +45,50 @@ class AuthController(
         val email: String
     )
 
+//    @PostMapping("/register")
+//    fun register(
+//        @RequestBody body: registerRequest
+//    ): registerReturn{
+//        if(userRepository.findByEmail(body.email) != null){
+//            throw EmailAlreadyExistsException("Email already in use")
+//        }
+//        userRepository.save(
+//            User(
+//                username = body.username,
+//                email = body.email,
+//                hashedPassword = hashEncoder.encode(body.password),
+//                role = body.role
+//            )
+//        )
+//        val user = userRepository.findByEmail(body.email) ?:
+//        throw EmailAlreadyExistsException("Invalid")
+//        return registerReturn(
+//            userId = user.userId.toHexString()
+//        )
+//    }
+
     @PostMapping("/register")
-    fun register(
-        @RequestBody body: registerRequest
-    ): registerReturn{
-        if(userRepository.findByEmail(body.email) != null){
+    fun register(@RequestBody body: registerRequest): registerReturn {
+        // Check if email already exists
+        if (userRepository.findByEmail(body.email) != null) {
             throw EmailAlreadyExistsException("Email already in use")
         }
-        userRepository.save(
-            User(
-                username = body.username,
-                email = body.email,
-                hashedPassword = hashEncoder.encode(body.password),
-                role = body.role
-            )
+
+        // Create and save the user with hashed password
+        val newUser = User(
+            username = body.username,
+            email = body.email,
+            hashedPassword = hashEncoder.encode(body.password),
+            //hashedPassword = body.password,
+            role = body.role ?: "user" // fallback to default role if null
         )
-        val user = userRepository.findByEmail(body.email) ?:
-        throw EmailAlreadyExistsException("Invalid")
-        return registerReturn(
-            userId = user.userId.toHexString()
-        )
+        userRepository.save(newUser)
+
+        // Fetch saved user to get ID
+        val savedUser = userRepository.findByEmail(body.email)
+            ?: throw IllegalStateException("User could not be saved")
+
+        return registerReturn(userId = savedUser.userId.toHexString())
     }
 
     @PostMapping("/login")
@@ -74,8 +98,11 @@ class AuthController(
         val user = userRepository.findByEmail(body.email) ?: throw InvalidCredentialsException("Invalid credentials")
 
         if(!hashEncoder.matches(body.password , user.hashedPassword)){
-            throw BadCredentialsException("Invalid Credentials")
+            throw com.example.Ocean.Disaster.Survey.controllers.InvalidCredentialsException("Invalid Credentials")
         }
+//        if(!body.password.equals(user.hashedPassword)){
+//              throw com.example.Ocean.Disaster.Survey.controllers.InvalidCredentialsException("Invalid Credentials")
+//        }
 
         return loginReturn(
             email = user.email,
