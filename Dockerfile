@@ -18,5 +18,17 @@ COPY src src
 # Build application
 RUN ./gradlew build -x test --no-daemon
 
+# ================================
+# Runtime stage
+# ================================
+FROM eclipse-temurin:17-jdk
+WORKDIR /app
+
+# Copy the jar built in the previous stage
+COPY --from=builder /app/build/libs/*.jar app.jar
+
+# Expose port
 EXPOSE 8080
+
+# Run the jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
